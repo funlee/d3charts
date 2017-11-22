@@ -1,0 +1,75 @@
+/*l-banner-style*/
+
+.l-banner {
+    background: #1E2943;
+    color: #fff;
+    width: 100%;
+    overflow: hidden;
+    margin: 0 auto 20px;
+}
+
+.l-til-icon {
+    display: block;
+    text-align: center;
+    margin-top: 18px;
+}
+
+.l-til-icon img {
+    background: #fff;
+    border-radius: 50%;
+}
+
+.l-til-icon h3 {
+    margin: 20px auto 10px;
+}
+
+
+/*l-container-style*/
+
+.l-card {
+    -webkit-transition: all .5s;
+    -moz-transition: all .5s;
+    transition: all .5s;
+    border: none;
+    box-shadow: 0 2px 8px rgba(84, 48, 132, 0.1);
+}
+
+.l-card:hover {
+    -webkit-transform: translateY(-8px);
+    -ms-transform: translateY(-8px);
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(84, 48, 132, 0.06);
+}
+
+.l-short-scan {
+    width: 100%;
+    display: block;
+}
+
+.l-short-scan img {
+    display: block;
+    width: 100%;
+    margin: 0 auto;
+}
+
+
+/*l-foot-style*/
+
+.l-footer {
+    background: #22252a;
+    color: #e9e9e9;
+    padding-bottom: 30px;
+}
+
+.l-footer .h5 {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.l-footer a {
+    color: #515151
+}
+
+.l-footer a:hover {
+    color: #48A0DC;
+}

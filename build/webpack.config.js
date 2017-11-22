@@ -1,0 +1,90 @@
+const path = require('path')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const CleanWebpackPlugin = require('clean-webpack-plugin')
+const webpack = require('webpack')
+const OpenBrowserPlugin = require('open-browser-webpack-plugin')
+
+module.exports = {
+  entry: {
+    bundle: path.join(__dirname, '../src/app.js'),
+    vendor: ['d3', 'mockjs', 'jquery']
+  },
+  output: {
+    path: path.join(__dirname, '../dist/'),
+    filename: '[name].js',
+    publicPath: '/'
+  },
+  devtool: 'inline-source-map',
+  devServer: {
+    port: 8080,
+    hot: true
+  },
+  plugins: [
+    new CleanWebpackPlugin(['dist'], {
+      root: path.join(__dirname, '../')
+    }),
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, '../src/index.hbs')
+    }),
+    //避免重复打包
+    new webpack.optimize.CommonsChunkPlugin({
+      name: 'vendor',
+      chunks: ['bundle'],
+      minChunks: Infinity
+    }),
+    new webpack.HotModuleReplacementPlugin(),
+    new OpenBrowserPlugin({
+      url: 'http://localhost:8080'
+    })
+  ],
+  module: {
+    rules: [{
+        test: /\.css$/,
+        use: [
+          'style-loader',
+          'css-loader'
+        ]
+      },
+      {
+        test: /\.less$/,
+        use: [
+          'style-loader',
+          'css-loader',
+          'less-loader'
+        ]
+      },
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: 'babel-loader'
+      },
+      {
+        test: /\.(png|svg|jpg|gif)$/,
+        loader: 'url-loader',
+        options: {
+          limit: 50000,
+          name: 'img/[name].[ext]'
+        }
+      },
+      {
+        test: /\.hbs$/,
+        loader: 'handlebars-loader',
+        options: {
+          inlineRequires: /\.(png|svg|jpg|gif)$/,
+        }
+      },
+      {
+        test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
+        loader: "file"
+      },
+      {
+        test: /\.(woff|woff2)$/,
+        loader: "url?prefix=font/&limit=5000"
+      },
+      {
+        test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
+        loader: "url?limit=10000&mimetype=application/octet-stream"
+      }
+    ]
+  }
+}
