@@ -1,8 +1,9 @@
-/**
- * @Author:       lee
- * @Email:        liwei@hiynn.com
- * @DateTime:     2017-11-09 21:21:04
- * @Description:  基础柱状图--模版
+/*
+ * @Author: funlee 
+ * @Email: i@funlee.cn 
+ * @Date: 2017-11-26 16:43:05 
+ * @Last Modified time:   2017-11-26 16:43:05 
+ * @Description: 折线图
  */
 import d3 from 'd3'
 import $ from 'jquery'
@@ -10,8 +11,8 @@ import Mock from 'mockjs'
 import getContainer from '../tool/getContainer'
 import getSize from '../tool/getSize'
 import tooltip from '../tool/tooltip'
-import getLinearGradient from '../tool/getLinearGradient'
-export default class Bar {
+import '../style/line.css'
+export default class Line {
   /**
    *  默认配置项
    */
@@ -26,40 +27,7 @@ export default class Bar {
         left: 40
       },
       itemStyle: {
-        normal: {
-          x1: 0,
-          y1: 0,
-          x2: 0,
-          y2: 100,
-          colorStops: [{
-              offset: 0,
-              color: 'red',
-              opacity: 0.8
-            },
-            {
-              offset: 100,
-              color: 'blue',
-              opacity: 0.8
-            }
-          ]
-        },
-        emphasize: {
-          x1: 0,
-          y1: 0,
-          x2: 0,
-          y2: 100,
-          colorStops: [{
-              offset: 0,
-              color: 'blue',
-              opacity: 0.8
-            },
-            {
-              offset: 100,
-              color: 'red',
-              opacity: 0.8
-            }
-          ]
-        }
+        color:['#d7b723', '#17f3d1', '#a455f4']
       },
       xAxis: {
         color: '#62a4f6',
@@ -80,14 +48,10 @@ export default class Bar {
   constructor(selector, option) {
     const defaultSet = this.defaultSet()
     this.config = Object.assign(defaultSet, option)
-    this.chartName = 'l-bar-chart'
+    this.chartName = 'l-line-chart'
     const {
       width,
-      height,
-      itemStyle: {
-        normal,
-        emphasize
-      }
+      height
     } = this.config
     this.size = getSize(selector, width, height)
     const [w, h] = this.size
@@ -97,24 +61,32 @@ export default class Bar {
       'height': h
     })
     $(`.${this.chartName}`).show().siblings('svg').hide()
-    // 创建面积图的线性渐变
-    const normalGradient = getLinearGradient(normal)
-    const emphasizeGradient = getLinearGradient(emphasize)
-
-    const defs = getContainer(`.${this.chartName}`, `${this.chartName}-defs`, 'defs')
-
-    defs.html(`${defs.html()}${normalGradient.dom}${emphasizeGradient.dom}`)
-
-    this.normalGradientId = normalGradient.id
-    this.emphasizeGradientId = emphasizeGradient.id
+    this.linePath = d3.svg.line()
+    .x((d, i) => {
+      return this.xScale(i)
+    })
+    .y(d => {
+      return this.yScale(d.value)
+    })
+    .interpolate('basis')
 
     const data = Mock.mock({
-      'bar|10': [{
-        'name|+1': ['龙卷风', '简单爱', '双节棍', '东风破', '七里香', '园游会', '发如雪', '珊瑚海', '迷迭香', '青花瓷'],
-        'value':'@natural(100,1000)'
-      }]
+      'line':{
+        'line1|10': [{
+          'name|+1': ['龙卷风', '简单爱', '双节棍', '东风破', '七里香', '园游会', '发如雪', '珊瑚海', '迷迭香', '青花瓷'],
+          'value':'@natural(100,150)'
+        }],
+        'line2|10': [{
+          'name|+1': ['龙卷风', '简单爱', '双节棍', '东风破', '七里香', '园游会', '发如雪', '珊瑚海', '迷迭香', '青花瓷'],
+          'value':'@natural(100,180)'
+        }],
+        'line3|10': [{
+          'name|+1': ['龙卷风', '简单爱', '双节棍', '东风破', '七里香', '园游会', '发如雪', '珊瑚海', '迷迭香', '青花瓷'],
+          'value':'@natural(100,160)'
+        }]
+      }
     })
-    this.dataset = data.bar
+    this.dataset = data.line
   }
   /**
    *  绘制
@@ -129,10 +101,23 @@ export default class Bar {
       }
     } = this.config
     const [width, height] = this.size
-    const maxValue = d3.max(data,(d) => { return d.value }) * 1.2
+
+    //集合所有数据寻找最大value值
+  let allData = []
+  d3.range(3).map((d, i) => {
+    allData.push(data['line' + (i + 1)])
+  })
+
+  let maxValue = allData[0][0].value
+
+  allData.map((item, i) => {
+    item.map((tip, index) => {
+      maxValue = allData[i][index].value > maxValue ? allData[i][index].value : maxValue
+    })
+  })
 
     this.xScale = d3.scale.ordinal()
-      .domain(d3.range(data.length))
+      .domain(d3.range(allData[0].length))
       .rangeRoundBands([20, width - right - left], 0.9)
 
   this.yScale = d3.scale.linear()
@@ -143,81 +128,77 @@ export default class Bar {
   .domain([0, maxValue])
   .range([height - bottom - top,0])
 
-    // 绘制柱子
-    this.drawBar(data)
+    // 绘制折线
+    this.drawLine(allData)
     // 绘制Y轴
     this.drawYaxis()
     // 绘制X轴
-    this.drawXaxis(data)
+    this.drawXaxis(allData)
   }
   /**
    *  绘制柱子
    */
-  drawBar(data) {
+  drawLine(data) {
     const self = this
     const {
       margin: {
         bottom
+      },
+      itemStyle:{
+        color
       }
     } = this.config
     const [width, height] = this.size
-    const container = getContainer(`.${this.chartName}`, 'bar-container', 'g')
-    const update = container.selectAll('.bar').data(data)
-    const enter = update.enter().append('g').attr('class', 'bar')
+    const container = getContainer(`.${this.chartName}`, 'line-container', 'g')
+    const update = container.selectAll('.l-line').data(data)
+    const enter = update.enter().append('path').attr('class', 'l-line')
     update.exit().remove()
 
-    const item = container.selectAll('.bar')
-    enter.append('rect')
-
-    item.select('rect').attr({
-        'x': (d, i) => {
-          return this.xScale(i)
+   container.selectAll('.l-line')
+    .classed('active-line', false)
+    .attr({
+        'd': (d, i) => {
+          return this.linePath(d)
         },
-        'width': this.xScale.rangeBand(),
-        'fill': `url(#${this.normalGradientId})`,
-        'cursor': 'pointer',
-        'y': (d) => {
-          return height - bottom
+        'fill': 'none',
+        'stroke-width': 3,
+        'stroke': (d, i) => {
+          return color[i]
         },
-        'height': 0
+        'stroke-opacity': .6,
+        'stroke-opacity': 0
       })
       .transition()
-      .duration(2000)
-      .attr({
-        'height': (d) => {
-          return this.yScale(d.value)
-        },
-        'y': (d) => {
-          return height - bottom - this.yScale(d.value)
-        }
-      })
-    item.on('mouseover', function (d) {
-        d3.select(this).select('rect').attr({
-          'fill': `url(#${self.emphasizeGradientId})`
-        })
-        const event = d3.event
-        const top = d3.event.pageY
-        const left = d3.event.pageX + 20
-        const option = {
-          location: {
-            x: left,
-            y: top
-          },
-          data: [{
-            name: '当前值',
-            value: d.value
-          }]
-        }
-        self.tooltip = tooltip(option)
-        self.tooltip.show()
-      })
-      .on('mouseout', function () {
-        d3.select(this).select('rect')
-          .attr({
-            'fill': `url(#${self.normalGradientId})`,
-          })
-        self.tooltip.hide()
-      })
+      .delay(1000)
+      .attr('stroke-opacity', 1)
+      .attr('class', 'active-line l-line')
+    // item.on('mouseover', function (d) {
+    //     d3.select(this).select('rect').attr({
+    //       'fill': `url(#${self.emphasizeGradientId})`
+    //     })
+    //     const event = d3.event
+    //     const top = d3.event.pageY
+    //     const left = d3.event.pageX + 20
+    //     const option = {
+    //       location: {
+    //         x: left,
+    //         y: top
+    //       },
+    //       data: [{
+    //         name: '当前值',
+    //         value: d.value
+    //       }]
+    //     }
+    //     self.tooltip = tooltip(option)
+    //     self.tooltip.show()
+    //   })
+    //   .on('mouseout', function () {
+    //     d3.select(this).select('rect')
+    //       .attr({
+    //         'fill': `url(#${self.normalGradientId})`,
+    //       })
+    //     self.tooltip.hide()
+    //   })
   }
   /**
    *  绘制柱图的Y轴
@@ -280,10 +261,10 @@ export default class Bar {
     } = this.config
     const [width, height] = this.size
     const xAxisDom = getContainer(`.${this.chartName}`, 'x-axis', 'g')
-    const update = xAxisDom.selectAll('text').data(data)
+    const update = xAxisDom.selectAll('text').data(data[0])
     update.enter().append('text')
     update.exit().remove()
-    xAxisDom.selectAll('text').data(data).attr({
+    xAxisDom.selectAll('text').data(data[0]).attr({
         'x': (d, i) => {
           return this.xScale(i)
         },

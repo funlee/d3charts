@@ -1,8 +1,9 @@
-/**
- * @Author:       lee
- * @Email:        liwei@hiynn.com
- * @DateTime:     2017-11-09 21:21:04
- * @Description:  基础柱状图--模版
+/*
+ * @Author: funlee 
+ * @Email: i@funlee.cn 
+ * @Date: 2017-11-24 22:35:50 
+ * @Last Modified time:   2017-11-24 22:35:50 
+ * @Description: 柱状图扩展--异形填充--利用Path
  */
 import d3 from 'd3'
 import $ from 'jquery'
@@ -11,7 +12,7 @@ import getContainer from '../tool/getContainer'
 import getSize from '../tool/getSize'
 import tooltip from '../tool/tooltip'
 import getLinearGradient from '../tool/getLinearGradient'
-export default class Bar {
+export default class BarPath {
   /**
    *  默认配置项
    */
@@ -25,7 +26,8 @@ export default class Bar {
         bottom: 30,
         left: 40
       },
-      itemStyle: {
+      itemStyle:{
+        barWidth:38,//异形图案的宽度，按照设计稿是76
         normal: {
           x1: 0,
           y1: 0,
@@ -61,6 +63,10 @@ export default class Bar {
           ]
         }
       },
+      label:{
+        color:'#62a4f6',
+        fontSize:14,
+      },
       xAxis: {
         color: '#62a4f6',
         fontSize: 14,
@@ -80,7 +86,7 @@ export default class Bar {
   constructor(selector, option) {
     const defaultSet = this.defaultSet()
     this.config = Object.assign(defaultSet, option)
-    this.chartName = 'l-bar-chart'
+    this.chartName = 'l-bar-path-chart'
     const {
       width,
       height,
@@ -97,19 +103,16 @@ export default class Bar {
       'height': h
     })
     $(`.${this.chartName}`).show().siblings('svg').hide()
-    // 创建面积图的线性渐变
+
     const normalGradient = getLinearGradient(normal)
     const emphasizeGradient = getLinearGradient(emphasize)
-
     const defs = getContainer(`.${this.chartName}`, `${this.chartName}-defs`, 'defs')
-
     defs.html(`${defs.html()}${normalGradient.dom}${emphasizeGradient.dom}`)
-
     this.normalGradientId = normalGradient.id
     this.emphasizeGradientId = emphasizeGradient.id
 
     const data = Mock.mock({
-      'bar|10': [{
+      'bar|6': [{
         'name|+1': ['龙卷风', '简单爱', '双节棍', '东风破', '七里香', '园游会', '发如雪', '珊瑚海', '迷迭香', '青花瓷'],
         'value':'@natural(100,1000)'
       }]
@@ -129,24 +132,37 @@ export default class Bar {
       }
     } = this.config
     const [width, height] = this.size
+
     const maxValue = d3.max(data,(d) => { return d.value }) * 1.2
 
     this.xScale = d3.scale.ordinal()
       .domain(d3.range(data.length))
       .rangeRoundBands([20, width - right - left], 0.9)
 
-  this.yScale = d3.scale.linear()
-    .domain([0, maxValue])
-    .range([0, height - bottom - top])
+    this.yScale = d3.scale.linear()
+      .domain([0, maxValue])
+      .range([0, height - bottom - top])
 
-  this.yAxisScale = d3.scale.linear()
-  .domain([0, maxValue])
-  .range([height - bottom - top,0])
+    this.yAxisScale = d3.scale.linear()
+    .domain([0, maxValue])
+    .range([height - bottom - top,0])
+
+   //利用区域生成器绘制异形图形的path
+  this.area = d3.svg.area()
+    .x((d)=> {
+      return d.x
+    })
+    .y0((d)=> {
+      return height - d.y0
+    })
+    .y1((d)=> {
+      return height - d.y1
+    })
 
     // 绘制柱子
     this.drawBar(data)
     // 绘制Y轴
-    this.drawYaxis()
+    // this.drawYaxis()
     // 绘制X轴
     this.drawXaxis(data)
   }
@@ -158,66 +174,110 @@ export default class Bar {
     const {
       margin: {
         bottom
+      },
+      itemStyle:{
+        barWidth
+      },
+      label:{
+        color,
+        fontSize
       }
     } = this.config
     const [width, height] = this.size
     const container = getContainer(`.${this.chartName}`, 'bar-container', 'g')
     const update = container.selectAll('.bar').data(data)
     const enter = update.enter().append('g').attr('class', 'bar')
+    enter.append('path')
+    enter.append('text')
     update.exit().remove()
 
     const item = container.selectAll('.bar')
-    enter.append('rect')
+    item.select('path').attr({
+      'transform':(d,i) => {
+        return `translate(${this.xScale(i) - barWidth},-20)`//设置translateY让图形不超过X轴轴线
+      },
+      'fill': `url(#${this.normalGradientId})`,
+      'd': (d, i) => {
+        const data = [{
+          x: 0,
+          y0: 20,
+          y1: 40
+        }, {
+          x: 38,
+          y0: 40,
+          y1: 40
+        }, {
+          x: 76,
+          y0: 20,
+          y1: 40
+        }]
+        return this.area(data)
+      }
+    })
+    .transition()
+    .duration(2000)
+    .attr({
+      'd': (d, i) => {
+        const pathY = this.yScale(d.value)
+        const data = [{
+          x: 0,
+          y0: 20,
+          y1: pathY
+        }, {
+          x: 38,
+          y0: 40,
+          y1: pathY + 20
+        }, {
+          x: 76,
+          y0: 20,
+          y1: pathY
+        }]
+        return this.area(data)
+      }
+    })
 
-    item.select('rect').attr({
-        'x': (d, i) => {
-          return this.xScale(i)
-        },
-        'width': this.xScale.rangeBand(),
-        'fill': `url(#${this.normalGradientId})`,
-        'cursor': 'pointer',
-        'y': (d) => {
-          return height - bottom
-        },
-        'height': 0
-      })
-      .transition()
-      .duration(2000)
-      .attr({
-        'height': (d) => {
-          return this.yScale(d.value)
-        },
-        'y': (d) => {
-          return height - bottom - this.yScale(d.value)
-        }
-      })
-    item.on('mouseover', function (d) {
-        d3.select(this).select('rect').attr({
-          'fill': `url(#${self.emphasizeGradientId})`
+    item.select('text').attr({
+      'x': (d, i) => {
+        return this.xScale(i)
+      },
+      'y': d => {
+        return height - this.yScale(d.value) - 30//图案有个尖，字体过不去，所以加30px
+      },
+      'dy': '1em',
+      'opacity': 0,
+      'text-anchor':'middle',
+      'fill':color,
+      'font-size':fontSize
+    })
+    .text(d => {
+      return d.value
+    })
+
+    item.on('mouseover', function() {
+      d3.select(this).select('text')
+        .transition()
+        .duration(1000)
+        .attr({
+          'dy': '-2em',
+          'opacity': 1
         })
-        const event = d3.event
-        const top = d3.event.pageY
-        const left = d3.event.pageX + 20
-        const option = {
-          location: {
-            x: left,
-            y: top
-          },
-          data: [{
-            name: '当前值',
-            value: d.value
-          }]
-        }
-        self.tooltip = tooltip(option)
-        self.tooltip.show()
+      d3.select(this).select('path').attr({
+        'fill': `url(#${self.emphasizeGradientId})`
       })
-      .on('mouseout', function () {
-        d3.select(this).select('rect')
-          .attr({
-            'fill': `url(#${self.normalGradientId})`,
-          })
-        self.tooltip.hide()
-      })
+    })
+    .on('mouseout', function() {
+      d3.select(this).select('text')
+        .transition()
+        .duration(1000)
+        .attr({
+          'dy': '1em',
+          'opacity': 0
+        })
+        d3.select(this).select('path').attr({
+          'fill': `url(#${self.normalGradientId})`
+        })
+    })
+
   }
   /**
    *  绘制柱图的Y轴

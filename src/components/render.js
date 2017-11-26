@@ -1,6 +1,9 @@
 import Bar from './charts/bar'
 import BarNormal from './charts/barNormal'
 import BarMask from './charts/barMask'
+import BarPath from './charts/barPath'
+import BarCss from './charts/barCss'
+import Line from './charts/line'
 
 export default (chartType) =>{
   const config = {}
@@ -13,6 +16,15 @@ export default (chartType) =>{
       break;
     case 'barMask':
       new BarMask('.l-chart', config).render()
+      break;
+    case 'barPath':
+      new BarPath('.l-chart', config).render()
+      break;
+    case 'barCss':
+      new BarCss('.l-chart', config).render()
+      break;
+    case 'line':
+      new Line('.l-chart', config).render()
       break;
     default:
       break;
