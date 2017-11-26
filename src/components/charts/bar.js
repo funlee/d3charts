@@ -96,7 +96,7 @@ export default class Bar {
       'width': w,
       'height': h
     })
-    $(`.${this.chartName}`).show().siblings('svg').hide()
+    $(`.${this.chartName}`).show().siblings().hide()
     // 创建面积图的线性渐变
     const normalGradient = getLinearGradient(normal)
     const emphasizeGradient = getLinearGradient(emphasize)

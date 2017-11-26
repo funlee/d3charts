@@ -4,6 +4,8 @@ import BarMask from './charts/barMask'
 import BarPath from './charts/barPath'
 import BarCss from './charts/barCss'
 import Line from './charts/line'
+import Area from './charts/area'
+import Pie from './charts/pie'
 
 export default (chartType) =>{
   const config = {}
@@ -25,6 +27,12 @@ export default (chartType) =>{
       break;
     case 'line':
       new Line('.l-chart', config).render()
+      break;
+    case 'area':
+      new Area('.l-chart', config).render()
+      break;
+    case 'pie':
+      new Pie('.l-chart', config).render()
       break;
     default:
       break;

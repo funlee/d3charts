@@ -10,7 +10,6 @@ import $ from 'jquery'
 import Mock from 'mockjs'
 import getContainer from '../tool/getContainer'
 import getSize from '../tool/getSize'
-import tooltip from '../tool/tooltip'
 import '../style/line.css'
 export default class Line {
   /**
@@ -60,7 +59,7 @@ export default class Line {
       'width': w,
       'height': h
     })
-    $(`.${this.chartName}`).show().siblings('svg').hide()
+    $(`.${this.chartName}`).show().siblings().hide()
     this.linePath = d3.svg.line()
     .x((d, i) => {
       return this.xScale(i)
@@ -136,7 +135,7 @@ export default class Line {
     this.drawXaxis(allData)
   }
   /**
-   *  绘制柱子
+   *  绘制折线
    */
   drawLine(data) {
     const self = this
@@ -172,33 +171,6 @@ export default class Line {
       .delay(1000)
       .attr('stroke-opacity', 1)
       .attr('class', 'active-line l-line')
-    // item.on('mouseover', function (d) {
-    //     d3.select(this).select('rect').attr({
-    //       'fill': `url(#${self.emphasizeGradientId})`
-    //     })
-    //     const event = d3.event
-    //     const top = d3.event.pageY
-    //     const left = d3.event.pageX + 20
-    //     const option = {
-    //       location: {
-    //         x: left,
-    //         y: top
-    //       },
-    //       data: [{
-    //         name: '当前值',
-    //         value: d.value
-    //       }]
-    //     }
-    //     self.tooltip = tooltip(option)
-    //     self.tooltip.show()
-    //   })
-    //   .on('mouseout', function () {
-    //     d3.select(this).select('rect')
-    //       .attr({
-    //         'fill': `url(#${self.normalGradientId})`,
-    //       })
-    //     self.tooltip.hide()
-    //   })
   }
   /**
    *  绘制柱图的Y轴

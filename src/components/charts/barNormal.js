@@ -61,7 +61,7 @@ export default class BarNormal {
       'width': w,
       'height': h
     })
-    $(`.${this.chartName}`).show().siblings('svg').hide()
+    $(`.${this.chartName}`).show().siblings().hide()
     const data = Mock.mock({
       'bar|10': [{
         'name|+1': ['龙卷风', '简单爱', '双节棍', '东风破', '七里香', '园游会', '发如雪', '珊瑚海', '迷迭香', '青花瓷'],

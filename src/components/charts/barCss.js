@@ -19,7 +19,8 @@ export default class BarCss {
   constructor(selector, option) {
     this.chartName = 'l-bar-css-chart'
     this.ul = getContainer(selector, this.chartName, 'ul')
-
+    $(`.${this.chartName}`).show().siblings().hide()
+    
     const data = Mock.mock({
       'bar|5': [{
         'name|+1': ['龙卷风', '简单爱', '双节棍', '东风破', '七里香'],

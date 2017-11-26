@@ -102,7 +102,7 @@ export default class BarPath {
       'width': w,
       'height': h
     })
-    $(`.${this.chartName}`).show().siblings('svg').hide()
+    $(`.${this.chartName}`).show().siblings().hide()
 
     const normalGradient = getLinearGradient(normal)
     const emphasizeGradient = getLinearGradient(emphasize)

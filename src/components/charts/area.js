@@ -1,17 +1,18 @@
-/**
- * @Author:       lee
- * @Email:        liwei@hiynn.com
- * @DateTime:     2017-11-09 21:21:04
- * @Description:  柱状图--蒙版切割图案
+/*
+ * @Author: funlee 
+ * @Email: i@funlee.cn 
+ * @Date: 2017-11-26 16:43:05 
+ * @Last Modified time:   2017-11-26 16:43:05 
+ * @Description: 面积图
  */
 import d3 from 'd3'
 import $ from 'jquery'
 import Mock from 'mockjs'
 import getContainer from '../tool/getContainer'
 import getSize from '../tool/getSize'
-import tooltip from '../tool/tooltip'
 import getLinearGradient from '../tool/getLinearGradient'
-export default class BarMask {
+import '../style/line.css'
+export default class Area {
   /**
    *  默认配置项
    */
@@ -24,10 +25,6 @@ export default class BarMask {
         right: 20,
         bottom: 30,
         left: 40
-      },
-      mask:{
-        lineWidth:4,//线宽
-        linePart:10//两根线的间隔
       },
       itemStyle: {
         normal: {
@@ -43,23 +40,6 @@ export default class BarMask {
             {
               offset: 100,
               color: 'blue',
-              opacity: 0.8
-            }
-          ]
-        },
-        emphasize: {
-          x1: 0,
-          y1: 0,
-          x2: 0,
-          y2: 100,
-          colorStops: [{
-              offset: 0,
-              color: 'blue',
-              opacity: 0.8
-            },
-            {
-              offset: 100,
-              color: 'red',
               opacity: 0.8
             }
           ]
@@ -82,20 +62,16 @@ export default class BarMask {
    *  初始化，创建容器
    */
   constructor(selector, option) {
+    const self = this
     const defaultSet = this.defaultSet()
     this.config = Object.assign(defaultSet, option)
-    this.chartName = 'l-bar-chart'
+    this.chartName = 'l-area-chart'
     const {
       width,
       height,
       itemStyle: {
-        normal,
-        emphasize
-      },
-      mask:{
-        lineWidth,
-        linePart
-      },
+        normal
+      }
     } = this.config
     this.size = getSize(selector, width, height)
     const [w, h] = this.size
@@ -104,17 +80,11 @@ export default class BarMask {
       'width': w,
       'height': h
     })
-    $(`.${this.chartName}`).show().siblings().hide()
     // 创建面积图的线性渐变
     const normalGradient = getLinearGradient(normal)
-    const emphasizeGradient = getLinearGradient(emphasize)
-
     const defs = getContainer(`.${this.chartName}`, `${this.chartName}-defs`, 'defs')
-
-    defs.html(`${defs.html()}${normalGradient.dom}${emphasizeGradient.dom}`)
-
+    defs.html(`${defs.html()}${normalGradient.dom}`)
     this.normalGradientId = normalGradient.id
-    this.emphasizeGradientId = emphasizeGradient.id
 
     //创建蒙版
     const mask = getContainer(`.${this.chartName}-defs`, `${this.chartName}-mask`, 'mask')
@@ -123,38 +93,19 @@ export default class BarMask {
     maskRect.attr({
       'x':0,
       'y':0,
-      'width':w,
-      'height':h,
-      'fill':'white'
+      'fill':'white',
+      'fill-opacity':1
     })
-    const maskLine = getContainer(`.${this.chartName}-mask`, `${this.chartName}-mask-line`, 'g')
-   
-    const update = maskLine.selectAll('line').data(d3.range(Math.ceil(h / linePart)))
-    update.enter().append('line')
-    update.exit().remove()
 
-    maskLine.selectAll('line').attr({
-      'x1': 0,
-      'y1': (d,i) => {
-        return i * linePart
-      },
-      'x2': w,
-      'y2': (d,i) => {
-        return i * linePart
-      },
-    })
-    .style({
-      'stroke-width': lineWidth,
-      'stroke': 'black'
-    })
+    $(`.${this.chartName}`).show().siblings().hide()
 
     const data = Mock.mock({
-      'bar|10': [{
-        'name|+1': ['龙卷风', '简单爱', '双节棍', '东风破', '七里香', '园游会', '发如雪', '珊瑚海', '迷迭香', '青花瓷'],
-        'value':'@natural(100,1000)'
-      }]
+      'area|10':[{
+          'name|+1': ['龙卷风', '简单爱', '双节棍', '东风破', '七里香', '园游会', '发如雪', '珊瑚海', '迷迭香', '青花瓷'],
+          'value':'@natural(100,150)'
+        }]
     })
-    this.dataset = data.bar
+    this.dataset = data.area
   }
   /**
    *  绘制
@@ -175,10 +126,6 @@ export default class BarMask {
       .domain(d3.range(data.length))
       .rangeRoundBands([20, width - right - left], 0.9)
 
-    const yDomain = [0, d3.max(data, (d) => {
-      return d.value
-    }) * 1.2]
-
   this.yScale = d3.scale.linear()
     .domain([0, maxValue])
     .range([0, height - bottom - top])
@@ -187,82 +134,61 @@ export default class BarMask {
   .domain([0, maxValue])
   .range([height - bottom - top,0])
 
-    // 绘制柱子
-    this.drawBar(data)
+    // 绘制面积图
+    this.drawArea(data)
     // 绘制Y轴
     this.drawYaxis()
     // 绘制X轴
     this.drawXaxis(data)
+
+    //面积动画--利用蒙版
+  d3.select(`#${this.chartName}-mask`).select('rect')
+  .attr({
+    'width': 0,
+    'height': height
+  })
+  .transition()
+  .delay(500)
+  .duration(3800)
+  .ease('bounce')
+  .attr({
+    'width': width
+  })
   }
   /**
-   *  绘制柱子
+   *  绘制面积图
    */
-  drawBar(data) {
+  drawArea(data) {
     const self = this
     const {
       margin: {
         bottom
+      },
+      itemStyle:{
+        color
       }
     } = this.config
     const [width, height] = this.size
-    const container = getContainer(`.${this.chartName}`, 'bar-container', 'g')
-    const update = container.selectAll('.bar').data(data)
-    const enter = update.enter().append('g').attr('class', 'bar')
-    update.exit().remove()
+    const container = getContainer(`.${this.chartName}`, 'area-container', 'g')
+    const area = getContainer('.area-container', 'area-path', 'path')
 
-    const item = container.selectAll('.bar')
-    enter.append('rect')
+    const areaPath = d3.svg.area()
+    .x((d, i) => {
+      return this.xScale(i)
+    })
+    .y1((d, i) => {
+      return this.yScale(d.value)
+    })
+    .y0(height - bottom)
+    .interpolate('basis')
 
-    item.select('rect').attr({
-        'x': (d, i) => {
-          return this.xScale(i)
-        },
-        'width': this.xScale.rangeBand(),
-        'fill': `url(#${this.normalGradientId})`,
-        'mask': `url(#${this.chartName}-mask)`,
-        'cursor': 'pointer',
-        'y': (d) => {
-          return height - bottom
-        },
-        'height': 0
-      })
-      .transition()
-      .duration(2000)
-      .attr({
-        'height': (d) => {
-          return this.yScale(d.value)
-        },
-        'y': (d) => {
-          return height - bottom - this.yScale(d.value)
-        }
-      })
-    item.on('mouseover', function (d) {
-        d3.select(this).select('rect').attr({
-          'fill': `url(#${self.emphasizeGradientId})`
-        })
-        const event = d3.event
-        const top = d3.event.pageY
-        const left = d3.event.pageX + 20
-        const option = {
-          location: {
-            x: left,
-            y: top
-          },
-          data: [{
-            name: '当前值',
-            value: d.value
-          }]
-        }
-        self.tooltip = tooltip(option)
-        self.tooltip.show()
-      })
-      .on('mouseout', function () {
-        d3.select(this).select('rect')
-          .attr({
-            'fill': `url(#${self.normalGradientId})`,
-          })
-        self.tooltip.hide()
-      })
+    area.attr({
+      'd': areaPath(data),
+      'stroke': 'none',
+      'fill': `url(#${this.normalGradientId})`,
+      'transform': `translate(-${this.xScale.rangeBand()},0)`,
+      'mask': `url(#${this.chartName}-mask)`
+    })
   }
   /**
    *  绘制柱图的Y轴

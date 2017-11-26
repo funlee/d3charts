@@ -133,3 +133,15 @@
     font-family: sans-serif;
     fill: #a4d5ff;
 }
+
+/*饼图*/
+.ready .rotate{animation:rotate 4s linear;transform-origin:460px 272px;fill:white;}
+@keyframes rotate{
+  0%{transform:rotate(0deg);fill:white;}
+  100%{fill:white;transform:rotate(-360deg);}
+}
+.ready .fix{animation:fix 4s step-start;fill:white;transform:translateX(-920px);}
+@keyframes fix{
+  50%{transform:translateX(0);fill:black;}
+  100%{fill:white;transform:translateX(-920px);}
+}
