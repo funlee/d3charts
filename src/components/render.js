@@ -6,6 +6,7 @@ import BarCss from './charts/barCss'
 import Line from './charts/line'
 import Area from './charts/area'
 import Pie from './charts/pie'
+import WaterBall from './charts/waterBall'
 
 export default (chartType) =>{
   const config = {}
@@ -33,6 +34,9 @@ export default (chartType) =>{
       break;
     case 'pie':
       new Pie('.l-chart', config).render()
+      break;
+    case 'waterBall':
+      new WaterBall('.l-chart', config).render()
       break;
     default:
       break;

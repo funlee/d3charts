@@ -111,7 +111,7 @@ export default class Bar {
     const data = Mock.mock({
       'bar|10': [{
         'name|+1': ['龙卷风', '简单爱', '双节棍', '东风破', '七里香', '园游会', '发如雪', '珊瑚海', '迷迭香', '青花瓷'],
-        'value':'@natural(100,1000)'
+        'value': '@natural(100,1000)'
       }]
     })
     this.dataset = data.bar
@@ -129,19 +129,22 @@ export default class Bar {
       }
     } = this.config
     const [width, height] = this.size
-    const maxValue = d3.max(data,(d) => { return d.value }) * 1.2
+    
+    const maxValue = d3.max(data, (d) => {
+      return d.value
+    }) * 1.2
 
     this.xScale = d3.scale.ordinal()
       .domain(d3.range(data.length))
       .rangeRoundBands([20, width - right - left], 0.9)
 
-  this.yScale = d3.scale.linear()
-    .domain([0, maxValue])
-    .range([0, height - bottom - top])
+    this.yScale = d3.scale.linear()
+      .domain([0, maxValue])
+      .range([0, height - bottom - top])
 
-  this.yAxisScale = d3.scale.linear()
-  .domain([0, maxValue])
-  .range([height - bottom - top,0])
+    this.yAxisScale = d3.scale.linear()
+      .domain([0, maxValue])
+      .range([height - bottom - top, 0])
 
     // 绘制柱子
     this.drawBar(data)

@@ -10,20 +10,14 @@ import $ from 'jquery'
 import Mock from 'mockjs'
 import getContainer from '../tool/getContainer'
 import getSize from '../tool/getSize'
-export default class Line {
+export default class Pie {
   /**
    *  默认配置项
    */
   defaultSet() {
     return {
-      width: '100%',
-      height: '100%',
-      margin: {
-        top: 20,
-        right: 20,
-        bottom: 30,
-        left: 40
-      }
+      width: 960,
+      height: 500
     }
   }
   /**
@@ -68,20 +62,19 @@ export default class Line {
     //创建蒙版
     const mask = getContainer(`.${this.chartName}-defs`, `${this.chartName}-mask`, 'mask')
     mask.attr('id',`${this.chartName}-mask`)
-
     const maskRotate = getContainer(`.${this.chartName}-mask`, 'rotate', 'rect')
     maskRotate.attr({
-      'x':w,
+      'x':480,
       'y':0,
-      'width':w,
-      'height':h,
+      'width':430,
+      'height':500
     })
     const maskFix = getContainer(`.${this.chartName}-mask`, 'fix', 'rect')
     maskFix.attr({
-      'x':w,
+      'x':480,
       'y':0,
-      'width':w,
-      'height':h,
+      'width':430,
+      'height':500
     })
 
     this.pie = d3.layout.pie()
@@ -142,24 +135,13 @@ export default class Line {
         d3.select(this).attr({
           'transform': 'scale(1.1,1.1)'
         })
-        // let tooltip = d3.select('.tooltip')
-        //   .style({
-        //     'display': 'block',
-        //     'top': d3.event.pageY + 10 + 'px',
-        //     'left': d3.event.pageX + 10 + 'px'
-        //   })
-        // tooltip.select('.name').html(d.data.name + ':')
-        // tooltip.select('.value').html(d.data.value)
-
-        // tooltip.select('.rate').html((Number(d.value) / d3.sum(data, item => {
-        //   return item.value
-        // }) * 100).toFixed(1) + '%')
+        // 悬浮框不做了
       })
       .on('mouseout', function () {
         d3.select(this).attr({
           'transform': 'scale(1,1)'
         })
-        // d3.select('.tooltip').style('display', 'none')
+        // 悬浮框不做了
       })
 
     //名称展示斜线长度基数
@@ -207,7 +189,6 @@ export default class Line {
 
           let p3x
           // let p3y = p2y
-
           if (parseFloat((d.startAngle + ((d.endAngle - d.startAngle) / 2)).toFixed(2)) <= parseFloat(Math.PI.toFixed(2))) { //判断扇形中线所在的弧度是否超过半圆
             p3x = p2x + standard
           } else {
