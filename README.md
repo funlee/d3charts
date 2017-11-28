@@ -5,4 +5,4 @@
     npm install
     npm run start
 
-Then open http://localhost:8080/pages/index.html in a browser
+Then open http://localhost:8080 in a browser

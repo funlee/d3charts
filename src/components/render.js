@@ -7,6 +7,7 @@ import Line from './charts/line'
 import Area from './charts/area'
 import Pie from './charts/pie'
 import WaterBall from './charts/waterBall'
+import Radar from './charts/radar'
 
 export default (chartType) =>{
   const config = {}
@@ -37,6 +38,9 @@ export default (chartType) =>{
       break;
     case 'waterBall':
       new WaterBall('.l-chart', config).render()
+      break;
+    case 'radar':
+      new Radar('.l-chart', config).render()
       break;
     default:
       break;
