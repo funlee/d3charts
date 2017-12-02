@@ -10,6 +10,7 @@ import $ from 'jquery'
 import Mock from 'mockjs'
 import getContainer from '../tool/getContainer'
 import getSize from '../tool/getSize'
+import fillImg from '../../img/fill.png'
 export default class Pie {
   /**
    *  默认配置项
@@ -56,7 +57,7 @@ export default class Pie {
     const patternImg = getContainer(`.${this.chartName}-pattern`, `${this.chartName}-pattern-img`, 'image')
     patternImg.attr({
       'xmlns:xlink':'http://www.w3.org/1999/xlink',
-      'xlink:href':'../img/fill.png'
+      'xlink:href':fillImg
     })
 
     //创建蒙版

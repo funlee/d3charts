@@ -8,6 +8,7 @@ import Area from './charts/area'
 import Pie from './charts/pie'
 import WaterBall from './charts/waterBall'
 import Radar from './charts/radar'
+import Triangle from './charts/triangle'
 
 export default (chartType) =>{
   const config = {}
@@ -42,6 +43,9 @@ export default (chartType) =>{
     case 'radar':
       new Radar('.l-chart', config).render()
       break;
+    case 'triangle':
+    new Triangle('.l-chart',config).render()
+    break;
     default:
       break;
   }
