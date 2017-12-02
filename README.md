@@ -6,3 +6,5 @@
     npm run start
 
 Then open http://localhost:8080 in a browser
+
+online access : http://charts.funlee.cn
