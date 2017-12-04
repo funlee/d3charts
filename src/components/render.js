@@ -9,6 +9,7 @@ import Pie from './charts/pie'
 import WaterBall from './charts/waterBall'
 import Radar from './charts/radar'
 import Triangle from './charts/triangle'
+import Map from './charts/map'
 
 export default (chartType) =>{
   const config = {}
@@ -44,8 +45,11 @@ export default (chartType) =>{
       new Radar('.l-chart', config).render()
       break;
     case 'triangle':
-    new Triangle('.l-chart',config).render()
-    break;
+      new Triangle('.l-chart',config).render()
+      break;
+    case 'map':
+      new Map('.l-chart',config).render()
+      break;
     default:
       break;
   }
