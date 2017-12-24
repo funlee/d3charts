@@ -210,6 +210,9 @@ export default class Triangle {
         return this.area(data)
       }
     })
+    .style({
+      'pointer-events':'all'
+    })
     .transition()
     .duration(2000)
     .attr({
@@ -228,6 +231,7 @@ export default class Triangle {
         return this.area(data)
       }
     })
+
 
     item.select('text').attr({
       'x': (d, i) => {
