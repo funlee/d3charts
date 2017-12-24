@@ -14,7 +14,7 @@ npm run start
 
 在线访问：http://show.funlee.cn/d3charts/index.html
 
-[ PPT 下载](https://raw.github.com/showmine/showmine.github.io/tree/master/data/d3charts.pptx "d3charts")
+[ PPT 下载](https://github.com/showmine/showmine.github.io/tree/master/data/d3charts.pptx "d3charts")
 
 
 
