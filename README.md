@@ -7,4 +7,4 @@
 
 Then open http://localhost:8080 in a browser
 
-online access : http://charts.funlee.cn
+online access : https://funlee.github.io/d3charts/
